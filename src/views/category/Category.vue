@@ -120,8 +120,21 @@
     },
     mounted() {
       this.scroll=new BScroll(this.$refs.aa,{
-
+        probeType:3,
+        pullUpload:true,
+        click:true
       })
+
+      this.scroll.on('scroll',(position)=>{
+        console.log(position)
+      })
+
+      this.scroll.on('pullingUp',()=>{
+        console.log("上拉加载更多")
+      })
+    },
+    methods:{
+
     }
   }
 </script>

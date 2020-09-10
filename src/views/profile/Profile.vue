@@ -1,11 +1,22 @@
 <template>
-  <div>我的</div>
+  <div>
+    <scroll class="content">
+      <ul>
+
+      </ul>
+    </scroll>
+  </div>
 </template>
 
 <script>
-    export default {
-        name: "Profile"
+  import Scroll from "@/components/common/scroll/Scroll";
+
+  export default {
+    name: "Profile",
+    components:{
+      Scroll
     }
+  }
 </script>
 
 <style scoped>
