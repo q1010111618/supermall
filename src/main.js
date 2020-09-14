@@ -4,6 +4,7 @@ import router from './router'
 
 Vue.config.productionTip = false
 
+Vue.prototype.$bus=new Vue()//创建时间总线
 
 new Vue({
   render: h => h(App),

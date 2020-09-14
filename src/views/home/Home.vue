@@ -75,10 +75,31 @@
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
     },
+    mounted() {
+      //防抖，减少短时间内的重复频繁调用
+      let refresh=this.debounce(this.$refs.scroll.refresh,200)
+
+      //3.监听item中图片加载完成
+      this.$bus.$on('itemImageLoad',()=>{
+        refresh()
+      })
+    },
     methods:{
       /**
        * 事件监听相关的方法
        */
+      //防抖，减少短时间内的重复动作
+      debounce(func,delay){
+        let timer=null
+
+        return function (...args){
+          if(timer)clearTimeout(timer)
+
+          timer=setTimeout(()=>{
+            func.apply(this,args)
+          },delay)
+        }
+      },
       tabClick(index){
         switch (index) {
           case 0:
