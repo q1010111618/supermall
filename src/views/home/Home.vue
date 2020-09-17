@@ -3,14 +3,17 @@
     <nav-bar class="home-nav">
       <div slot="center">购物街</div>
     </nav-bar>
-
+    <tab-control :titles="['流行','新款','精选']"
+                 @tabClick="tabClick"
+                 ref="tabControl1" class="tab-control" v-show="isTabFixed"></tab-control>
     <scroll class="content" ref="scroll" :probe-type="3" :pull-up-load="true"
             @scroll="contentScroll" @pullingUp="loadMore">
-      <home-swiper :banners="banners"></home-swiper>
+      <home-swiper :banners="banners" @swiperImageLoad="swiperImageLoad"></home-swiper>
       <recommend-view :recommends="recommends"></recommend-view>
       <feature-view></feature-view>
-      <tab-control :titles="['流行','新款','精选']" class="tab-control"
-                   @tabClick="tabClick"></tab-control>
+      <tab-control :titles="['流行','新款','精选']"
+                   @tabClick="tabClick"
+                   ref="tabControl"></tab-control>
       <goods-list :goods="showGoods"/>
     </scroll>
 
@@ -28,11 +31,11 @@
   import Scroll from "@/components/common/scroll/Scroll";
   import TabControl from "@/components/content/tabControl/TabControl";
   import GoodsList from "@/components/content/goods/GoodsList";
-  import BackTop from "../../components/content/backTop/BackTop";
+  import BackTop from "@/components/content/backTop/BackTop";
 
-  import {getHomeMultidata,getHomeGoods} from "../../network/home";
+  import {getHomeMultidata,getHomeGoods} from "@/network/home";
 
-
+  import utils from "@/common/utils"
 
   export default {
     name: "Home",
@@ -57,8 +60,11 @@
           'sell':{page:0,list:[]}
         },
         currentType:'pop',
+        backTopShow:true,
+        tabOffsetTop:0,
+        isTabFixed:false,
 
-        backTopShow:true
+        saveY:0
       }
     },
     computed:{
@@ -74,32 +80,30 @@
       this.getHomeGoods('pop')
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
+
     },
     mounted() {
       //防抖，减少短时间内的重复频繁调用
-      let refresh=this.debounce(this.$refs.scroll.refresh,200)
+      let refresh=utils.debounce(this.$refs.scroll.refresh,200)
 
-      //3.监听item中图片加载完成
+      //1.监听item中图片加载完成
       this.$bus.$on('itemImageLoad',()=>{
         refresh()
       })
+    },
+
+    activated(){
+      this.$refs.scroll.scrollTo(0,this.saveY,0)
+      this.$refs.scroll.refresh()
+    },
+    deactivated() {
+      this.saveY=this.$refs.scroll.getScrollY()
     },
     methods:{
       /**
        * 事件监听相关的方法
        */
-      //防抖，减少短时间内的重复动作
-      debounce(func,delay){
-        let timer=null
 
-        return function (...args){
-          if(timer)clearTimeout(timer)
-
-          timer=setTimeout(()=>{
-            func.apply(this,args)
-          },delay)
-        }
-      },
       tabClick(index){
         switch (index) {
           case 0:
@@ -112,7 +116,8 @@
             this.currentType='sell'
             break;
         }
-        console.log(index)
+        this.$refs.tabControl1.currentIndex=index;
+        this.$refs.tabControl.currentIndex=index;
       },
       //回到頂部
       backClick(){
@@ -122,10 +127,21 @@
       contentScroll(position){
         //console.log("y:",position.y)
         this.backTopShow=(-position.y)>1000//动态显示回到顶部按钮
+
+        //决定tabControl是否吸顶（position:fixed)
+        this.isTabFixed=-position.y>this.tabOffsetTop
+
       },
       //加载更多
       loadMore(){
         this.getHomeGoods(this.currentType)
+      },
+      //监听图片是否加载完毕确定高度
+      swiperImageLoad(){
+        //2.获取tabControl的offsetTop
+        //所有的组件都有一个属性$el：用于获取组件中的元素
+        this.tabOffsetTop=this.$refs.tabControl.$el.offsetTop
+        console.log("tabOffset:",this.tabOffsetTop)
       },
 
       /*
@@ -144,7 +160,7 @@
       getHomeGoods(type){
         let page=this.goods[type].page+1
         getHomeGoods(type,page).then(res=>{
-          console.log("商品数据：",res);
+          //console.log("商品数据：",res);
           //...会解析数组
           this.goods[type].list.push(...res.data.data.list)
           this.goods[type].page+=1
@@ -161,31 +177,29 @@
 
 <style scoped>
   #home {
-    /*padding-top: 44px;*/
-    height:calc(100vh - 93px);
+    /*position: relative;*/
+    height: 100vh;
   }
 
   .home-nav {
     background-color: var(--color-tint);
-    color: white;
+    font-weight: 700;
+    color: #fff;
+  }
 
-    position: fixed;
-    top: 0;
+  .content {
+    overflow: hidden;
+    position: absolute;
+    top: 44px;
+    bottom: 49px;
     left: 0;
     right: 0;
-    z-index: 9;
   }
 
   .tab-control{
-    position: sticky;/*新属性，会随滚动定位在某个地方置顶顶部*/
-    top: 43px;
-    z-index: 99;
-    background-color: white;
+    position: relative;
+    z-index: 9;
   }
 
-  .content{
-    height:100%;
-    overflow: hidden;
-    margin-top: 44px;
-  }
+
 </style>

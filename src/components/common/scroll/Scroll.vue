@@ -35,14 +35,19 @@
       })
 
       //实时滚动监听事件
-      this.scroll.on('scroll',(position)=>{
-        this.$emit("scroll",position)//暴露事件
-      })
+      if(this.probeType==3||this.probeType==2){
+        this.scroll.on('scroll',(position)=>{
+          this.$emit("scroll",position)//暴露事件
+        })
+      }
 
       //监听上拉事件
-      this.scroll.on('pullingUp',()=>{
-        this.$emit('pullingUp')
-      })
+      //3.监听scroll滚动到底部
+      if(this.pullUpload){
+        this.scroll.on('pullingUp',()=>{
+          this.$emit('pullingUp')
+        })
+      }
     },
     methods:{
       scrollTo(x,y,time=300){
@@ -53,8 +58,11 @@
       },
 
       refresh(){
-        console.log("---")
         this.scroll&&this.scroll.refresh()
+      },
+
+      getScrollY(){
+        return this.scroll?this.scroll.y:0
       }
     }
   }
