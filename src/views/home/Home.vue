@@ -84,7 +84,7 @@
     },
     mounted() {
       //防抖，减少短时间内的重复频繁调用
-      let refresh=utils.debounce(this.$refs.scroll.refresh,200)
+      let refresh=utils.debounce(this.$refs.scroll.refresh,300)
 
       //1.监听item中图片加载完成
       this.$bus.$on('itemImageLoad',()=>{

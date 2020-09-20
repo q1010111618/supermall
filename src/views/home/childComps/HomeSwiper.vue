@@ -12,7 +12,7 @@
   import {Swiper, SwiperItem} from "@/components/common/swiper";
 
   export default {
-    name: "childComps",
+    name: "HomeSwiper",
     props: {
       banners: {
         type: Array,

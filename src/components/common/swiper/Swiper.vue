@@ -24,7 +24,7 @@
       },
       animDuration: {
         type: Number,
-        default: 300
+        default: 500
       },
       moveRatio: {
         type: Number,
@@ -51,7 +51,7 @@
 
         // 2.开启定时器
         this.startTimer();
-      }, 200)
+      }, 500)
     },
     methods: {
       /**
@@ -91,7 +91,7 @@
       checkPosition: function () {
         window.setTimeout(() => {
           // 1.校验正确的位置
-          this.swiperStyle.transition = '0ms';
+          this.swiperStyle.transition = '20ms';
           if (this.currentIndex >= this.slideCount + 1) {
             this.currentIndex = 1;
             this.setTransform(-this.currentIndex * this.totalWidth);
