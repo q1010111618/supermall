@@ -34,8 +34,7 @@
   import BackTop from "@/components/content/backTop/BackTop";
 
   import {getHomeMultidata,getHomeGoods} from "@/network/home";
-
-  import utils from "@/common/utils"
+  import {itemListenerMixin} from "../../common/mixin";
 
   export default {
     name: "Home",
@@ -50,6 +49,7 @@
       TabControl,
       BackTop
     },
+    mixins:itemListenerMixin,
     data() {
       return {
         banners: [],
@@ -64,7 +64,7 @@
         tabOffsetTop:0,
         isTabFixed:false,
 
-        saveY:0
+        saveY:0,
       }
     },
     computed:{
@@ -83,13 +83,7 @@
 
     },
     mounted() {
-      //防抖，减少短时间内的重复频繁调用
-      let refresh=utils.debounce(this.$refs.scroll.refresh,300)
 
-      //1.监听item中图片加载完成
-      this.$bus.$on('itemImageLoad',()=>{
-        refresh()
-      })
     },
 
     activated(){
@@ -97,7 +91,11 @@
       this.$refs.scroll.refresh()
     },
     deactivated() {
+      //1.保存Y值
       this.saveY=this.$refs.scroll.getScrollY()
+
+      //2.取消全局时间的监听
+      this.$bus.$off('itemImgLoad',this.itemImgListener)
     },
     methods:{
       /**

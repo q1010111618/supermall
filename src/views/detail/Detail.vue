@@ -1,14 +1,14 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-nav"></detail-nav-bar>
+    <detail-nav-bar class="detail-nav" @titleClick="titleClick"/>
     <scroll class="content" ref="scroll">
       <detail-swiper :top-images="topImages"/>
       <detail-base-info :goods="goods"/>
       <detail-shop-info :shop="shop"/>
       <detail-goods-info :detail-info="detailInfo" @imageLoad="imageLoad"/>
-      <detail-param-info :param-info="paramInfo"/>
-      <detail-comment-info :comment-info="commentInfo"/>
-      <goods-list :goods="recommends"/>
+      <detail-param-info :param-info="paramInfo" ref="param"/>
+      <detail-comment-info :comment-info="commentInfo" ref="comment"/>
+      <goods-list :goods="recommends" ref="recommend"/>
     </scroll>
   </div>
 </template>
@@ -26,6 +26,8 @@
   import GoodsList from "@/components/content/goods/GoodsList";
 
   import {getDetail, getRecommend, Goods, Shop, GoodsParam} from "@/network/detail";
+  import {itemListenerMixin} from "../../common/mixin";
+  import utils from "../../common/utils";
 
   export default {
     name: "Detail",
@@ -41,6 +43,7 @@
       Scroll,
       GoodsList
     },
+    mixins:itemListenerMixin,
     data() {
       return {
         iid: null,
@@ -50,7 +53,10 @@
         detailInfo: {},
         paramInfo: {},
         commentInfo: {},
-        recommends:[]
+        recommends:[],
+        //newRefresh:null,
+        themeTopYs:[],
+        getThemeTopY:null
       }
     },
     created() {
@@ -84,6 +90,7 @@
           this.commentInfo = data.rate.list[0]
           console.log("评论信息：",this.commentInfo)
         }
+
       })
 
       //3.请求推荐数据
@@ -91,10 +98,33 @@
         this.recommends=res.data.data.list
         console.log("推荐信息：",this.recommends)
       })
+
+      //4.给getThemeTopY赋值
+      this.getThemeTopY=utils.debounce(()=>{
+        this.themeTopYs=[]
+        this.themeTopYs.push(0)
+        this.themeTopYs.push(this.$refs.param.$el.offsetTop)
+        this.themeTopYs.push(this.$refs.comment.$el.offsetTop)
+        this.themeTopYs.push(this.$refs.recommend.$el.offsetTop)
+
+        console.log("高度",this.themeTopYs)
+      },200)
+    },
+    destroyed() {
+      this.$bus.$off('itemImgLoad',this.itemImgListener)
     },
     methods: {
+      //4.监听图片完成
       imageLoad() {
+        //this.newRefresh()
         this.$refs.scroll.refresh()
+
+        this.getThemeTopY()
+      },
+
+      titleClick(index){
+        //console.log("点击：",index)
+        this.$refs.scroll.scrollTo(0,-this.themeTopYs[index],200)
       }
     }
   }

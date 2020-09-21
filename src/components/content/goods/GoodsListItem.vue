@@ -28,7 +28,7 @@
     methods:{
       imageLoad(){
         //事件总线
-        //接收方式this.$bus.$on('',()=>{})
+        //接收方式this.$bus.$on('itemImageLoad',()=>{})
         this.$bus.$emit('itemImageLoad')
       },
       itemClick(){
