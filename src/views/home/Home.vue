@@ -31,10 +31,9 @@
   import Scroll from "@/components/common/scroll/Scroll";
   import TabControl from "@/components/content/tabControl/TabControl";
   import GoodsList from "@/components/content/goods/GoodsList";
-  import BackTop from "@/components/content/backTop/BackTop";
 
   import {getHomeMultidata,getHomeGoods} from "@/network/home";
-  import {itemListenerMixin} from "../../common/mixin";
+  import {backTopMixin, itemListenerMixin} from "../../common/mixin";
 
   export default {
     name: "Home",
@@ -47,9 +46,8 @@
       NavBar,
       Scroll,
       TabControl,
-      BackTop
     },
-    mixins:itemListenerMixin,
+    mixins:[itemListenerMixin,backTopMixin],
     data() {
       return {
         banners: [],
@@ -60,7 +58,6 @@
           'sell':{page:0,list:[]}
         },
         currentType:'pop',
-        backTopShow:true,
         tabOffsetTop:0,
         isTabFixed:false,
 
@@ -117,14 +114,11 @@
         this.$refs.tabControl1.currentIndex=index;
         this.$refs.tabControl.currentIndex=index;
       },
-      //回到頂部
-      backClick(){
-        this.$refs.scroll.scrollTo(0,0)//0,0回到顶部
-      },
       //滚动监听
       contentScroll(position){
         //console.log("y:",position.y)
-        this.backTopShow=(-position.y)>1000//动态显示回到顶部按钮
+        //this.backTopShow=(-position.y)>1000//动态显示回到顶部按钮
+        this.listenShowBackTop(position)
 
         //决定tabControl是否吸顶（position:fixed)
         this.isTabFixed=-position.y>this.tabOffsetTop

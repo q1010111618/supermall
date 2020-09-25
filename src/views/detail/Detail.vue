@@ -1,7 +1,7 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-nav" @titleClick="titleClick"/>
-    <scroll class="content" ref="scroll">
+    <detail-nav-bar class="detail-nav" @titleClick="titleClick" ref="nav"/>
+    <scroll class="content" ref="scroll" @scroll="contentScroll" :probe-type="3">
       <detail-swiper :top-images="topImages"/>
       <detail-base-info :goods="goods"/>
       <detail-shop-info :shop="shop"/>
@@ -10,6 +10,10 @@
       <detail-comment-info :comment-info="commentInfo" ref="comment"/>
       <goods-list :goods="recommends" ref="recommend"/>
     </scroll>
+    <detail-bottom-bar @addToCart="addToCart"/>
+
+    <!--组件监听需要使用native-->
+    <back-top @click.native="backClick" v-show="backTopShow"/>
   </div>
 </template>
 
@@ -21,12 +25,13 @@
   import DetailGoodsInfo from "./childComps/DetailGoodsInfo";
   import DetailParamInfo from "./childComps/DetailParamInfo";
   import DetailCommentInfo from "./childComps/DetailCommentInfo";
+  import DetailBottomBar from "./childComps/DetailBottomBar";
 
   import Scroll from "@/components/common/scroll/Scroll";
   import GoodsList from "@/components/content/goods/GoodsList";
 
   import {getDetail, getRecommend, Goods, Shop, GoodsParam} from "@/network/detail";
-  import {itemListenerMixin} from "../../common/mixin";
+  import {itemListenerMixin,backTopMixin} from "../../common/mixin";
   import utils from "../../common/utils";
 
   export default {
@@ -39,11 +44,12 @@
       DetailGoodsInfo,
       DetailParamInfo,
       DetailCommentInfo,
+      DetailBottomBar,
 
       Scroll,
-      GoodsList
+      GoodsList,
     },
-    mixins:itemListenerMixin,
+    mixins:[itemListenerMixin,backTopMixin],
     data() {
       return {
         iid: null,
@@ -56,7 +62,9 @@
         recommends:[],
         //newRefresh:null,
         themeTopYs:[],
-        getThemeTopY:null
+        getThemeTopY:null,
+
+        currentIndex:0,
       }
     },
     created() {
@@ -106,6 +114,7 @@
         this.themeTopYs.push(this.$refs.param.$el.offsetTop)
         this.themeTopYs.push(this.$refs.comment.$el.offsetTop)
         this.themeTopYs.push(this.$refs.recommend.$el.offsetTop)
+        this.themeTopYs.push(Number.MAX_VALUE)
 
         console.log("高度",this.themeTopYs)
       },200)
@@ -125,6 +134,46 @@
       titleClick(index){
         //console.log("点击：",index)
         this.$refs.scroll.scrollTo(0,-this.themeTopYs[index],200)
+      },
+
+      //监听滚动
+      contentScroll(position){
+        //1.获取Y值
+        let positionnY=-position.y
+
+        //2.positionY和主题中值进行对比
+        let length=this.themeTopYs.length
+        for(let i=0;i<length-1;i++){
+          //console.log("高度是否相等：",this.currentIndex!==i)
+          if(this.currentIndex!=i&&(positionnY>=this.themeTopYs[i]&&positionnY<this.themeTopYs[i+1])){
+            this.currentIndex=i;
+            console.log("标签：",this.currentIndex)
+            this.$refs.nav.currentIndex=this.currentIndex
+          }
+
+          /*if(this.currentIndex!==i&&((i<length-1&&positionnY>=this.themeTopYs[i]&&positionnY<this.themeTopYs[i+1])
+            ||(i===length-1&&positionnY>=this.themeTopYs[i]))){
+            this.currentIndex=i;
+            console.log("标签：",this.currentIndex)
+            this.$refs.nav.currentIndex=this.currentIndex
+          }*/
+        }
+
+        //3.是否显示回到顶部
+        this.listenShowBackTop(position)
+      },
+      //监听购物车按钮
+      addToCart(){
+        //1.获取购物车需要展示的信息
+        let product={}
+        product.image=this.topImages[0]
+        product.title=this.goods.title
+        product.desc=this.goods.desc
+        product.price=this.goods.realPrice
+        product.iid=this.iid
+
+        //2.将商品添加到购物车
+        this.$store.dispatch("addCart",product)
       }
     }
   }

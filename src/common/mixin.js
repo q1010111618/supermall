@@ -1,4 +1,5 @@
 import utils from "./utils";
+import BackTop from "@/components/content/backTop/BackTop";
 
 export const itemListenerMixin={
   data(){
@@ -17,5 +18,25 @@ export const itemListenerMixin={
 
     //1.监听item中图片加载完成
     this.$bus.$on('itemImageLoad',this.itemImgListener)
+  }
+}
+
+export  const  backTopMixin={
+  data(){
+    return {
+      backTopShow:true,
+    }
+  },
+  components:{
+    BackTop
+  },
+  methods:{
+    //回到頂部
+    backClick(){
+      this.$refs.scroll.scrollTo(0,0)//0,0回到顶部
+    },
+    listenShowBackTop(position){
+      this.backTopShow=(-position.y)>1000//动态显示回到顶部按钮
+    }
   }
 }
