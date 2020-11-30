@@ -32,6 +32,8 @@
 
   import {getDetail, getRecommend, Goods, Shop, GoodsParam} from "@/network/detail";
   import {itemListenerMixin,backTopMixin} from "../../common/mixin";
+  import {mapActions} from 'vuex'
+
   import utils from "../../common/utils";
 
   export default {
@@ -123,6 +125,7 @@
       this.$bus.$off('itemImgLoad',this.itemImgListener)
     },
     methods: {
+      ...mapActions(['addCart']),
       //4.监听图片完成
       imageLoad() {
         //this.newRefresh()
@@ -172,8 +175,14 @@
         product.price=this.goods.realPrice
         product.iid=this.iid
 
-        //2.将商品添加到购物车
-        this.$store.dispatch("addCart",product)
+        //2.将商品添加到购物车(因为使用了mapActions)
+        this.addCart(product).then(res=>{
+          this.$toast.show(res,2000)
+          console.log(res)
+        })
+        /*this.$store.dispatch("addCart",product).then(res=>{
+          console.log(res)
+        })*/
       }
     }
   }

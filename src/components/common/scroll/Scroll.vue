@@ -44,6 +44,7 @@
       //监听上拉事件
       //3.监听scroll滚动到底部
       if(this.pullUpload){
+        console.log("上拉了")
         this.scroll.on('pullingUp',()=>{
           this.$emit('pullingUp')
         })

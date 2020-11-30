@@ -126,6 +126,7 @@
       },
       //加载更多
       loadMore(){
+        console.log("上拉加载")
         this.getHomeGoods(this.currentType)
       },
       //监听图片是否加载完毕确定高度
